@@ -14,7 +14,7 @@ export default function OAuth() {
       const auth = getAuth(app);
 
       const result = await signInWithPopup(auth, provider);
-      const res = fetch("/api/auth/google", {
+      const res = await fetch("/api/auth/google", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -25,7 +25,7 @@ export default function OAuth() {
           photo: result.user.photoURL,
         }),
       });
-      const data = (await res).json();
+      const data = await res.json();
       dispatch(signInSuccess(data));
       navigate('/');
     } catch (error) {
