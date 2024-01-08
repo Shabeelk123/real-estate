@@ -13,6 +13,7 @@ export default function CreateListing() {
     imageUrls: [],
   });
   const [imageUploadError, setImageUploadError] = useState(false);
+  const [upload, setUpload] = useState(false);
 
   console.log(formData);
 
@@ -20,6 +21,8 @@ export default function CreateListing() {
     console.log("handleImage");
     if (files.length > 0 && files.length + formData.imageUrls.length < 7) {
       const promises = [];
+      setUpload(true);
+      setImageUploadError(false);
       for (let i = 0; i < files.length; i++) {
         promises.push(storeImage(files[i]));
       }
@@ -30,12 +33,15 @@ export default function CreateListing() {
             imageUrls: formData.imageUrls.concat(urls),
           });
           setImageUploadError(false);
+          setUpload(false);
         })
         .catch((error) => {
           setImageUploadError(`image upload failed ${error}`);
+          setUpload(false);
         });
     } else {
       setImageUploadError("you can only upload 6 images per listing");
+      setUpload(false);
     }
     console.log(formData);
   };
@@ -193,10 +199,11 @@ export default function CreateListing() {
             />
             <button
               type="button"
+              disabled={upload}
               className="p-3 text-green-700 border border-green-700 rounded uppercase hover:shadow-lg disabled:opacity-80"
               onClick={handleImageUpload}
             >
-              Upload
+              {upload ? 'Uploading...' : 'Upload'}
             </button>
           </div>
           <p className="text-red-700 text-sm">
@@ -212,7 +219,7 @@ export default function CreateListing() {
                     alt="listing image"
                     className="w-20 h-20 object-contain rounded-lg"
                   />
-                  <button type="button" onClick={handleDeleteImage(index)} className="p-3 text-red-700 rounded-lg uppercase hover:opacity-75">
+                  <button type="button" onClick={() => handleDeleteImage(index)} className="p-3 text-red-700 rounded-lg uppercase hover:opacity-75">
                     delete
                   </button>
                 </div>
