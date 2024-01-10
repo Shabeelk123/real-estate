@@ -28,6 +28,8 @@ export default function Profile() {
   const [fileUploadError, setFileUploadError] = useState(false);
   const [formData, setFormData] = useState({});
   const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [showListingError, setShowListingError] = useState(false);
+  const [list, setList] = useState([]);
   const dispatch = useDispatch();
   console.log(currentUser);
 
@@ -56,6 +58,7 @@ export default function Profile() {
       }
     );
   };
+  console.log(list);
 
   useEffect(() => {
     if (file) {
@@ -114,7 +117,7 @@ export default function Profile() {
   const handleSignOut = async () => {
     try {
       dispatch(signOutUserStart());
-      const res = await fetch('/api/auth/signout');
+      const res = await fetch("/api/auth/signout");
       const data = await res.json();
       if (data.success === false) {
         signOutUserFailure(data.message);
@@ -124,7 +127,23 @@ export default function Profile() {
     } catch (error) {
       signOutUserFailure(error.message);
     }
-  }
+  };
+
+  const handleShowListings = async () => {
+    try {
+      setShowListingError(false);
+      const res = await fetch(`/api/user/listings/${currentUser._id}`);
+      const list = await res.json();
+      if (list.success === false) {
+        setShowListingError(true);
+        return;
+      }
+      setList(list);
+    } catch (error) {
+      window.console.log(error);
+      setShowListingError(true);
+    }
+  };
 
   return (
     <div className="p-3 max-w-lg mx-auto">
@@ -188,7 +207,10 @@ export default function Profile() {
         >
           {loading ? "Loading..." : "Update"}
         </button>
-        <Link className="bg-green-700 text-white p-3 rounded-lg uppercase text-center hover:opacity-95" to={"/create-listing"}>
+        <Link
+          className="bg-green-700 text-white p-3 rounded-lg uppercase text-center hover:opacity-95"
+          to={"/create-listing"}
+        >
           Create Listing
         </Link>
       </form>
@@ -199,13 +221,44 @@ export default function Profile() {
         >
           Delete account
         </span>
-        <span className="text-red-700 cursor-pointer" onClick={handleSignOut}>SignOut</span>
+        <span className="text-red-700 cursor-pointer" onClick={handleSignOut}>
+          SignOut
+        </span>
       </div>
 
       <p className="text-red-700 mt-5">{error ? error : ""}</p>
       <p className="text-green-700 mt-5">
         {updateSuccess ? "User is updated successfully!" : ""}
       </p>
+      <button className="text-green-700 w-full" onClick={handleShowListings}>
+        Show Listings
+      </button>
+      <p className="text-red-700 mt-5">
+        {showListingError ? "Error showing on Listings!!" : ""}
+      </p>
+      <div className="flex flex-col gap-4">
+        <h1 className="text-center mt-7 text-2xl font-semibold">Your Listings</h1>
+      {list &&
+        list.length > 0 &&
+        list.map((items) => {
+          return (<div key={items._id} className="border rounded-lg p-3 flex justify-between items-center gap-4">
+            <Link to={`/listing/${items._id}`}>
+              <img
+                src={items.imageUrls[0]}
+                alt="listing cover"
+                className="h-16 w-16 object-contain"
+              ></img>
+            </Link>
+            <Link className="flex-1 text-slate-700 font-semibold hove:underline truncate" to={`/listing/${items._id}`}>
+              <p>{items.name}</p>
+            </Link>
+            <div className="flex flex-col items-center">
+              <button className="text-red-700 uppercase">Delete</button>
+              <button className="text-green-700 uppercase">Edit</button>
+            </div>
+          </div>);
+        })}
+      </div>
     </div>
   );
 }

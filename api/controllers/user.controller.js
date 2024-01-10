@@ -45,7 +45,7 @@ export const deleteUser = async(req, res, next) => {
 
 export const getUserListing = async(req, res, next) => {
     //we are verifying user from cookie and request are same
-    if (req.user.id !== req.params.id) {
+    if (req.user.id === req.params.id) {
         try {
            const listing = await List.find({ userRef: req.params.id });
             res.status(200).json(listing);
